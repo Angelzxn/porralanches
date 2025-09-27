@@ -143,9 +143,11 @@ class Pedido(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, unique=True, default=uuid.uuid4, nullable=False)
     carrinho_id = Column(UUID(as_uuid=True), ForeignKey("carrinhos.id"), nullable=False)
+    cliente_id = Column(UUID(as_uuid=True), ForeignKey("clientes.id"), nullable=False)
     valor = Column(Float, nullable=False)
     status = Column(String, nullable=False, default="Aguardando pagamento")
     data_criacao = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     data_atualizacao = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     carrinho = relationship("Carrinho", back_populates="pedido")
+    cliente = relationship("Cliente", back_populates="pedidos")
