@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Header
 from models import Cliente
 from assets.hash import bcrypt_context
-from schemas import CadastrarCliente, Login
+from schemas import CadastrarCliente, Login, CadastrarEmpresa
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from assets.dependecies import get_session
@@ -55,7 +55,7 @@ async def cadastrar_cliente(request: CadastrarCliente, session: Session = Depend
 
 
 auth_router.post("/cliente/login")
-async def login_cliente(request: Login, session: Session = Depends(get_session), token: str = Header(...)):
+async def login_cliente(request: Login, session: Session = Depends(get_session)):
     cpf = "a" if not request.cpf else request.cpf
     email = "a" if not request.email else request.email
     
@@ -79,4 +79,4 @@ async def login_cliente(request: Login, session: Session = Depends(get_session),
 
 # ------------------------------- Empresa ---------------------------------------------------------- #
 auth_router.post("/empresa/cadastro")
-async def cadastrar_empresa(request: )
+async def cadastrar_empresa(request: CadastrarEmpresa, session)
