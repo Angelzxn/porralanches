@@ -22,6 +22,12 @@ class Cliente(Base):
     pedidos = relationship("Pedido", back_populates="cliente", cascade="all, delete-orphan")
     enderecos = relationship("Endereco", back_populates="cliente", cascade="all, delete-orphan")
 
+    def __init__(self, nome, email, cpf, senha):
+        self.nome_completo = nome
+        self.email = email
+        self.cpf = cpf
+        self.senha = senha
+
 
 class Endereco(Base):
     __tablename__ = "enderecos"
