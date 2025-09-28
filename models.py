@@ -46,6 +46,15 @@ class Endereco(Base):
 
     cliente = relationship("Cliente", back_populates="enderecos")
 
+    def __init__(self, cliente_id, endereco, complemento, bairro, cidade, estado, cep, referencia = None):
+        self.cliente_id = cliente_id
+        self.endereco = endereco
+        self.complemento = complemento
+        self.bairro = bairro
+        self.cidade = cidade
+        self.estado = estado
+        self.cep = cep
+        self.referencia = referencia
 
 class Empresa(Base):
     __tablename__ = "empresas"
