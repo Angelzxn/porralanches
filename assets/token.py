@@ -35,3 +35,4 @@ def decodificar_token(token_user):
         raise PermissionError("Token expirado")
     except JWTError:
         raise RuntimeError("Erro ao decodificar token")
+    

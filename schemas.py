@@ -26,3 +26,10 @@ class CadastrarEmpresa(BaseModel):
     
     class Config:
         from_attributes = True
+
+class LoginEmpresa(BaseModel):
+    cnpj: str
+    senha: str
+
+    class Config:
+        from_attributes = True
