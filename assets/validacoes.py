@@ -49,3 +49,25 @@ def validar_senha(senha: str) -> bool:
         return False
     return True
         
+        
+def validar_cnpj(cnpj: str) -> bool:
+    # Remove tudo que não é número
+    cnpj = ''.join(filter(str.isdigit, cnpj))
+    
+    # Verifica se tem 14 dígitos ou se todos são iguais
+    if len(cnpj) != 14 or cnpj == cnpj[0] * 14:
+        return False
+    
+    def calcular_digito(cnpj_parcial, pesos):
+        soma = sum(int(num) * peso for num, peso in zip(cnpj_parcial, pesos))
+        resto = soma % 11
+        return 0 if resto < 2 else 11 - resto
+
+    # Pesos para os dígitos verificadores
+    pesos1 = [5,4,3,2,9,8,7,6,5,4,3,2]
+    pesos2 = [6] + pesos1
+
+    digito1 = calcular_digito(cnpj[:12], pesos1)
+    digito2 = calcular_digito(cnpj[:12] + str(digito1), pesos2)
+
+    return cnpj[-2:] == f"{digito1}{digito2}"

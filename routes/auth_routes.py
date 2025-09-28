@@ -79,4 +79,5 @@ async def login_cliente(request: Login, session: Session = Depends(get_session))
 
 # ------------------------------- Empresa ---------------------------------------------------------- #
 auth_router.post("/empresa/cadastro")
-async def cadastrar_empresa(request: CadastrarEmpresa, session)
+async def cadastrar_empresa(request: CadastrarEmpresa, session: Session = Depends(get_session)):
+    
