@@ -10,7 +10,7 @@ from assets.validacoes import validar_cpf, validar_email, validar_senha
 from assets.token import criar_token, decodificar_token
 import logging
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timezone
 from assets.hash import bcrypt_context
 
 logger = logging.getLogger(__name__)
@@ -25,25 +25,34 @@ async def edit_info(request: EditarCliente, session: Session = Depends(get_sessi
     sub = token_decodificado.get("sub")
     exp = token_decodificado.get("exp")
 
-    if datetime.fromtimestamp(exp) < datetime.now():
+    if exp < datetime.now(timezone.utc):
         raise HTTPException(status_code=403, detail="Token expirado")
 
     id_cliente = UUID(sub)
 
     cliente = session.query(Cliente).filter(Cliente.id == id_cliente).first()
 
+    
+
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
 
     if request.nome_completo is not None:
         cliente.nome_completo = request.nome_completo
+        
     if request.email is not None:
+        if not validar_email(request.email):
+            raise HTTPException(status_code=400, detail="E-mail inválido")
         cliente.email = request.email
+
     if request.cpf is not None:
+        if not validar_cpf(limpar_cpf(request.cpf)):
+            raise HTTPException(status_code=400, detail="CPF inválido")
         cliente.cpf = request.cpf
 
-
     if request.senha is not None:
+        if not validar_senha(request.senha):
+            raise HTTPException(status_code=400, detail="Sua senha não segue nossas regras")
         senha_hash = bcrypt_context.hash(request.senha[:72])
         cliente.senha = senha_hash
     

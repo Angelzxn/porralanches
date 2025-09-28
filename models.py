@@ -21,6 +21,7 @@ class Cliente(Base):
 
     pedidos = relationship("Pedido", back_populates="cliente", cascade="all, delete-orphan")
     enderecos = relationship("Endereco", back_populates="cliente", cascade="all, delete-orphan")
+    carrinhos = relationship("Carrinho", back_populates="cliente", cascade="all, delete-orphan")
 
     def __init__(self, nome, email, cpf, senha):
         self.nome_completo = nome
@@ -98,7 +99,7 @@ class Loja(Base):
     carrinhos = relationship("Carrinho", back_populates="loja", cascade="all, delete-orphan")
 
 
-class Produtos(Base):
+class Produto(Base):
     __tablename__ = "produtos"
 
     id = Column(UUID(as_uuid=True), primary_key=True, unique=True, default=uuid.uuid4, nullable=False)
@@ -158,7 +159,7 @@ class ProdutoCarrinho(Base):
     data_atualizacao = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     carrinho = relationship("Carrinho", back_populates="produtos")
-    produto = relationship("Produtos", back_populates="carrinhos")
+    produto = relationship("Produto", back_populates="carrinhos")
 
 class Pedido(Base):
     __tablename__ = "pedidos"

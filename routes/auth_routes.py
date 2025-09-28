@@ -16,7 +16,7 @@ auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
 # ---------------------------------- Cliente --------------------------------------------------------------- #
 
-auth_router.post("/cliente/cadastro")
+@auth_router.post("/cliente/cadastro")
 async def cadastrar_cliente(request: CadastrarCliente, session: Session = Depends(get_session)):
     if not validar_cpf(limpar_cpf(request.cpf)):
         raise HTTPException(status_code=400, detail="CPF inválido!")
@@ -33,7 +33,7 @@ async def cadastrar_cliente(request: CadastrarCliente, session: Session = Depend
         raise HTTPException(status_code=409, detail="Já existe um cliente com esse e-mail ou senha")
     
     senha = bcrypt_context.hash(request.senha[:72])
-    new = Cliente(nome=request.nome.title(), 
+    new = Cliente(nome=request.nome_completo.title(), 
                   email=request.email, 
                   cpf=limpar_cpf(request.cpf), 
                   senha=senha)
@@ -54,7 +54,7 @@ async def cadastrar_cliente(request: CadastrarCliente, session: Session = Depend
     
 
 
-auth_router.post("/cliente/login")
+@auth_router.post("/cliente/login")
 async def login_cliente(request: Login, session: Session = Depends(get_session)):
     cpf = "a" if not request.cpf else request.cpf
     email = "a" if not request.email else request.email
@@ -78,7 +78,7 @@ async def login_cliente(request: Login, session: Session = Depends(get_session))
 
 
 # ------------------------------- Empresa ---------------------------------------------------------- #
-auth_router.post("/empresa/cadastro")
+@auth_router.post("/empresa/cadastro")
 async def cadastrar_empresa(request: CadastrarEmpresa, session: Session = Depends(get_session)):
     if not validar_cnpj(formatar_cnpj(request.cnpj)):
         raise HTTPException(status_code=400, detail="CNPJ inválido")
