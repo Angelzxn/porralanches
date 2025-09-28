@@ -70,6 +70,12 @@ class Empresa(Base):
     
     lojas = relationship("Loja", back_populates="empresa", cascade="all, delete-orphan")
 
+    def __init__(self, titulo, razao_social, cnpj, senha):
+        self.titulo = titulo
+        self.razao_social = razao_social
+        self.cnpj = cnpj
+        self.senha = senha
+
 
 class Loja(Base):
     __tablename__ = "lojas"

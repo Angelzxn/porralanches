@@ -17,4 +17,12 @@ class Login(BaseModel):
 
     class Config:
         from_attributes = True
-        
+
+class CadastrarEmpresa(BaseModel):
+    titulo: str
+    razao_social: str
+    cnpj: str
+    senha: str
+    
+    class Config:
+        from_attributes = True
