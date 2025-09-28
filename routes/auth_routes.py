@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
+# ---------------------------------- Cliente --------------------------------------------------------------- #
+
 auth_router.post("/cliente/cadastro")
 async def cadastrar_cliente(request: CadastrarCliente, session: Session = Depends(get_session)):
     if not validar_cpf(limpar_cpf(request.cpf)):
@@ -73,3 +75,6 @@ async def login_cliente(request: Login, session: Session = Depends(get_session),
         "access-token": criar_token(user.id),
         "token-type": "Bearer"
     }
+
+
+# ------------------------------- Empresa ---------------------------------------------------------- #

@@ -76,6 +76,7 @@ class Loja(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, unique=True, default=uuid.uuid4, nullable=False)
     empresa_id = Column(UUID(as_uuid=True), ForeignKey("empresas.id"), nullable=False, index=True)
+    senha = Column(String, nullable=False)
     titulo = Column(String(200), nullable=False)
     cidade = Column(String(200), nullable=False, index=True)
     estado = Column(String(2), nullable=False, index=True)
