@@ -18,3 +18,25 @@ def validar_cpf(cpf: str) -> bool:
 
     # Verifica se bate com os dígitos do CPF
     return cpf[-2:] == f"{digito1}{digito2}"
+
+
+def validar_senha(senha: str) -> bool:
+    if len(senha) < 6:
+        return False
+    
+    if not any(i.isupper() for i in senha):
+        return False
+    if not any(not c.isalnum() for c in senha):
+        return False
+
+    count = 0
+    for i in senha:
+        try:
+            int(i)
+            break
+        except:
+            count = count+1
+    if count == len(senha):
+        return False
+    return True
+        
