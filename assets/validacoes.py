@@ -25,3 +25,26 @@ def validar_email(email: str) -> bool:
     # Regex pra validar e-mail
     padrao = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
     return re.match(padrao, email) is not None
+
+
+
+def validar_senha(senha: str) -> bool:
+    if len(senha) < 6:
+        return False
+    
+    if not any(i.isupper() for i in senha):
+        return False
+    if not any(not c.isalnum() for c in senha):
+        return False
+
+    count = 0
+    for i in senha:
+        try:
+            int(i)
+            break
+        except:
+            count = count+1
+    if count == len(senha):
+        return False
+    return True
+        
