@@ -50,15 +50,12 @@ def validar_senha(senha: str) -> bool:
         return False
     return True
         
-<<<<<<< HEAD
-
 def validar_token_cliente(token: str):
     try:
         dados = decodificar_token(token)
         return dados  # Retorna os dados do usuário se o token for válido, senão None
     except Exception:
         return None
-=======
         
 def validar_cnpj(cnpj: str) -> bool:
     # Remove tudo que não é número
@@ -81,4 +78,4 @@ def validar_cnpj(cnpj: str) -> bool:
     digito2 = calcular_digito(cnpj[:12] + str(digito1), pesos2)
 
     return cnpj[-2:] == f"{digito1}{digito2}"
->>>>>>> 2ae0b9a97f14975ae6decfb939893d1249e6f3a8
+
