@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Header
 from models import Cliente
 from assets.hash import bcrypt_context
 from schemas import CadastrarCliente, Login
@@ -53,7 +53,7 @@ async def cadastrar_cliente(request: CadastrarCliente, session: Session = Depend
 
 
 auth_router.post("/cliente/login")
-async def login_cliente(request: Login, session: Session = Depends(get_session)):
+async def login_cliente(request: Login, session: Session = Depends(get_session), token: str = Header(...)):
     cpf = "a" if not request.cpf else request.cpf
     email = "a" if not request.email else request.email
     
@@ -61,3 +61,15 @@ async def login_cliente(request: Login, session: Session = Depends(get_session))
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
     
+    correta = bcrypt_context.verify(request.senha, user.senha)
+    if not correta:
+        raise HTTPException(status_code=401, detail="Senha incorreta")
+    
+    if not user.ativo:
+        raise HTTPException(status_code=403, detail="Usuário inativo")
+
+    return {
+        "nome": user.nome_completo,
+        "access-token": criar_token(user.id),
+        "token-type": "Bearer"
+    }
