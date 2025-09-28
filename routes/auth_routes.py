@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from assets.dependecies import get_session
 from assets.formatacoes import limpar_cpf
-from assets.validacoes import validar_cpf, validar_email
+from assets.validacoes import validar_cpf, validar_email, validar_senha
 from assets.token import criar_token
 import logging
 
@@ -21,6 +21,9 @@ async def cadastrar_cliente(request: CadastrarCliente, session: Session = Depend
     
     if not validar_email(email=request.email):
         raise HTTPException(status_code=400, detail="E-mail inválido!")
+    
+    if not validar_senha(request.senha):
+        raise HTTPException(status_code=400, detail="Sua senha não segue nossas regras")
     
     ja_existe = session.query(Cliente).filter(or_(Cliente.cpf == limpar_cpf(request.cpf),
                                                   Cliente.email == request.email)).first()
@@ -57,5 +60,4 @@ async def login_cliente(request: Login, session: Session = Depends(get_session))
     user = session.query(Cliente).filter(or_(Cliente.cpf == cpf, Cliente.email == email)).first()
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
-    
     
