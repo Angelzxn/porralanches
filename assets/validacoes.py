@@ -1,4 +1,5 @@
 import re
+from assets.token import decodificar_token
 
 def validar_cpf(cpf: str) -> bool:
     # Remove caracteres não numéricos
@@ -49,3 +50,10 @@ def validar_senha(senha: str) -> bool:
         return False
     return True
         
+
+def validar_token_cliente(token: str):
+    try:
+        dados = decodificar_token(token)
+        return dados  # Retorna os dados do usuário se o token for válido, senão None
+    except Exception:
+        return None

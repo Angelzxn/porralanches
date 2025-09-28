@@ -17,4 +17,12 @@ class Login(BaseModel):
 
     class Config:
         from_attributes = True
-        
+
+class EditarCliente(BaseModel):
+    nome_completo: Optional[str]
+    email: Optional[str]
+    cpf: Optional[str]
+    senha: Optional[str]
+
+    class Config:
+        from_attributes = True
