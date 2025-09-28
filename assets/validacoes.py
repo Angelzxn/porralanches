@@ -1,3 +1,5 @@
+import re
+
 def validar_cpf(cpf: str) -> bool:
     # Remove caracteres não numéricos
     cpf = ''.join(filter(str.isdigit, cpf))
@@ -18,3 +20,8 @@ def validar_cpf(cpf: str) -> bool:
 
     # Verifica se bate com os dígitos do CPF
     return cpf[-2:] == f"{digito1}{digito2}"
+
+def validar_email(email: str) -> bool:
+    # Regex pra validar e-mail
+    padrao = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+    return re.match(padrao, email) is not None
