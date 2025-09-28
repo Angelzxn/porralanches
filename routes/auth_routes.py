@@ -1,18 +1,20 @@
-from fastapi import APIRouter, Depends, HTTPException
-from models import Cliente
+from fastapi import APIRouter, Depends, HTTPException, Header
+from models import Cliente, Empresa
 from assets.hash import bcrypt_context
-from schemas import CadastrarCliente, Login
+from schemas import CadastrarCliente, Login, CadastrarEmpresa, LoginEmpresa
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from assets.dependecies import get_session
-from assets.formatacoes import limpar_cpf
-from assets.validacoes import validar_cpf, validar_email, validar_senha
+from assets.formatacoes import limpar_cpf, formatar_cnpj
+from assets.validacoes import validar_cpf, validar_email, validar_senha, validar_cnpj
 from assets.token import criar_token
 import logging
 
 logger = logging.getLogger(__name__)
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
+
+# ---------------------------------- Cliente --------------------------------------------------------------- #
 
 auth_router.post("/cliente/cadastro")
 async def cadastrar_cliente(request: CadastrarCliente, session: Session = Depends(get_session)):
@@ -61,3 +63,66 @@ async def login_cliente(request: Login, session: Session = Depends(get_session))
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
     
+    correta = bcrypt_context.verify(request.senha, user.senha)
+    if not correta:
+        raise HTTPException(status_code=401, detail="Senha incorreta")
+    
+    if not user.ativo:
+        raise HTTPException(status_code=403, detail="Usuário inativo")
+
+    return {
+        "nome": user.nome_completo,
+        "access-token": criar_token(user.id),
+        "token-type": "Bearer"
+    }
+
+
+# ------------------------------- Empresa ---------------------------------------------------------- #
+auth_router.post("/empresa/cadastro")
+async def cadastrar_empresa(request: CadastrarEmpresa, session: Session = Depends(get_session)):
+    if not validar_cnpj(formatar_cnpj(request.cnpj)):
+        raise HTTPException(status_code=400, detail="CNPJ inválido")
+    
+    existe = session.query(Empresa).filter(Empresa.cnpj == formatar_cnpj(request.cnpj)).first()
+    if existe:
+        raise HTTPException(status_code=409, detail="Empresa já cadastrada")
+    
+    if not validar_senha(request.senha):
+        raise HTTPException(status_code=400, detail="Senha não segue os padrões")
+    
+    senha = bcrypt_context.hash(request.senha)
+    
+    new = Empresa(titulo=request.titulo.title(),
+                  cnpj=formatar_cnpj(request.cnpj),
+                  razao_social=request.razao_social.upper(),
+                  senha = senha)
+    
+    try:
+        session.add(new)
+        session.commit()
+        return {
+            "mensagem": "Cadastro realizado! Aguarde a aprovação"
+        }
+    except Exception as e:
+        logger.error(f"Erro ao cadastrar empresa: {e}")
+        session.rollback()
+        raise HTTPException(status_code=400, detail="Erro ao cadastrar empresa")
+    
+
+@auth_router.post("/empresa/login")
+async def login_empresa(request: LoginEmpresa, session: Session = Depends(get_session)):
+    empresa = session.query(Empresa).filter(Empresa.cnpj == formatar_cnpj(request.cnpj)).first()
+    if not empresa:
+        raise HTTPException(status_code=404, detail="Empresa não encontrada")
+    
+    if not empresa.ativo:
+        raise HTTPException(status_code=403, detail="Empresa inativa, aguarde liberação")
+    
+    if not bcrypt_context.verify(request.senha, empresa.senha):
+        raise HTTPException(status_code=401, detail="Senha incorreta")
+    
+    return {
+        "access-token": criar_token(empresa.id),
+        "token-type": "Bearer",
+        "titulo": empresa.titulo
+    }
