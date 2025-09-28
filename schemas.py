@@ -38,6 +38,5 @@ class LoginEmpresa(BaseModel):
     cnpj: str
     senha: str
 
-
     class Config:
         from_attributes = True
