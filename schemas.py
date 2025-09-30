@@ -42,13 +42,13 @@ class LoginEmpresa(BaseModel):
         from_attributes = True
 
 class CriarEndereco(BaseModel):
-    rua: str
-    numero: str
+    endereco: str
     complemento: Optional[str]
     bairro: str
     cidade: str
     estado: str
     cep: str
+    ref: str
 
     class Config:
         from_attributes = True

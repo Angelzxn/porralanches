@@ -68,7 +68,7 @@ async def edit_info(request: EditarCliente, session: Session = Depends(get_sessi
     return {"mensagem": "Informações atualizadas com sucesso!"}
 
 
-@user_router.get("/user/criar_endereco")
+@user_router.post("/user/criar_endereco")
 async def criar_endereco(request: CriarEndereco, session: Session = Depends(get_session), token: str = Header(...)):
     token_decodificado = decodificar_token(token)
 
@@ -77,22 +77,31 @@ async def criar_endereco(request: CriarEndereco, session: Session = Depends(get_
 
     if exp < datetime.now(timezone.utc):
         raise HTTPException(status_code=403, detail="Token expirado")
-
-    id_cliente = UUID(sub)
-
+    try:
+        id_cliente = UUID(sub)
+    except Exception as e:
+         logger.error(f"Erro ao gerar UUID: {e}")
+         raise HTTPException(status_code=400, detail="ID inválido")
     cliente = session.query(Cliente).filter(Cliente.id == id_cliente).first()
 
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
     
-    endereco = Endereco(request.endereco, request.numero, request.referencia, request.bairro, request.cidade, request.estado, request.cep)
+    endereco = Endereco(cliente_id=cliente.id, 
+                        endereco=request.endereco, 
+                        complemento=request.complemento, 
+                        bairro=request.bairro, 
+                        cidade=request.cidade, 
+                        estado=request.estado, 
+                        cep=request.cep, 
+                        referencia=request.ref)
     
-    if endereco.cliente_id == cliente.id:
-        try:
+
+    try:
             session.add(endereco)
             session.commit()
             return {"mensagem": "Endereço criado com sucesso!"}
-        except Exception as e:
+    except Exception as e:
             session.rollback()
             logger.error(f"Erro ao criar endereço: {e}")
             raise HTTPException(status_code=500, detail="Erro ao criar endereço")
@@ -173,8 +182,8 @@ async def deletar_endereco(request: DeletarEndereco, session: Session = Depends(
         logger.error(f"Erro ao deletar endereço: {e}")
         raise HTTPException(status_code=500, detail="Erro ao deletar endereço")
 
-@user_router.post("/user/listar_enderecos/")
-async def listar_enderecos(request: ListarEnderecos, session: Session = Depends(get_session), token: str = Header(...)):
+@user_router.get("/user/listar_enderecos/")
+async def listar_enderecos(session: Session = Depends(get_session), token: str = Header(...)):
     
     token_decodificado = decodificar_token(token)
 
@@ -183,21 +192,29 @@ async def listar_enderecos(request: ListarEnderecos, session: Session = Depends(
 
     if exp < datetime.now(timezone.utc):
         raise HTTPException(status_code=403, detail="Token expirado")
-
-    id_cliente = UUID(sub)
-
+    try:
+            id_cliente = UUID(sub)
+    except Exception as e:
+            logger.error(f"Erro ao gerar UUID: {e}")
+            raise HTTPException(status_code=400, detail="ID inválido")
     cliente = session.query(Cliente).filter(Cliente.id == id_cliente).first()
 
     if not cliente:
-        raise HTTPException(status_code=404, detail="Cliente não encontrado")       
+            raise HTTPException(status_code=404, detail="Cliente não encontrado")      
 
-    enderecos = session.query(Endereco).filter(Endereco.cliente_id == cliente.id, Endereco.cliente_id == request.id_cliente).all()
+    enderecos = session.query(Endereco).filter(Endereco.cliente_id == cliente.id).all()
     if not enderecos:
         raise HTTPException(status_code=404, detail="Endereço não encontrado para este cliente")
     
-    for endereco in enderecos:
-        print(endereco)
-    return {"mensagem": "Endereços listados com sucesso!", "enderecos": enderecos}
+    return {
+         "enderecos": [{
+              "id": endereco.id,
+              "endereco": endereco.endereco,
+              "bairro": endereco.bairro,
+              "cidade": endereco.cidade,
+              "estado": endereco.estado
+         }for endereco in enderecos]
+    }
 
 @user_router.post("/user/mostrar_endereco/")
 async def mostrar_endereco(request: ListarEnderecos, session: Session = Depends(get_session), token: str = Header(...)):
