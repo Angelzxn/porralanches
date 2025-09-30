@@ -40,3 +40,39 @@ class LoginEmpresa(BaseModel):
 
     class Config:
         from_attributes = True
+
+class CriarEndereco(BaseModel):
+    rua: str
+    numero: str
+    complemento: Optional[str]
+    bairro: str
+    cidade: str
+    estado: str
+    cep: str
+
+    class Config:
+        from_attributes = True
+
+class EditarEndereco(BaseModel):
+    endereco: Optional[str]
+    complemento: Optional[str]
+    referencia: Optional[str]
+    bairro: Optional[str]
+    cidade: Optional[str]
+    estado: Optional[str]
+    cep: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+class DeletarEndereco(BaseModel):
+    endereco_id: int
+
+    class Config:
+        from_attributes = True
+
+class ListarEnderecos(BaseModel):
+    id: Optional[int]
+    id_cliente: int
+    class Config:
+        from_attributes = True
