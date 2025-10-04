@@ -9,3 +9,8 @@ def get_session():
         yield session
     finally:
         session.close()
+
+def normalizar_texto(texto: str) -> str:
+    if not texto.isalnum():
+        return ''.join(e for e in texto if e.isalnum())
+    return texto

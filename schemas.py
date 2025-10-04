@@ -1,9 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 
 class CadastrarCliente(BaseModel):
     nome_completo: str
-    email: str
+    email: EmailStr
     cpf: str
     senha: str
 

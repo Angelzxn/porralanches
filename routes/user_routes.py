@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 user_router = APIRouter(prefix="/user", tags=["User"])
 
-@user_router.put("/edit_info/")
+@user_router.put("/user/edit_info/")
 async def edit_info(request: EditarCliente, session: Session = Depends(get_session), token: str = Header(...)):
 
     token_decodificado = decodificar_token(token)
@@ -67,6 +67,31 @@ async def edit_info(request: EditarCliente, session: Session = Depends(get_sessi
 
     return {"mensagem": "Informações atualizadas com sucesso!"}
 
+@user_router.get("/user/infos")
+async def mostrar_info(session: Session = Depends(get_session), token: str = Header(...)):
+    token_decodificado = decodificar_token(token)
+
+    sub = token_decodificado.get("sub")
+    exp = token_decodificado.get("exp")
+
+    if exp < datetime.now(timezone.utc):
+        raise HTTPException(status_code=403, detail="Token expirado")
+    try:
+        id_cliente = UUID(sub)
+    except Exception as e:
+         logger.error(f"Erro ao gerar UUID: {e}")
+         raise HTTPException(status_code=400, detail="ID inválido")
+    cliente = session.query(Cliente).filter(Cliente.id == id_cliente).first()
+
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+
+    return {
+        "id": cliente.id,
+        "nome_completo": cliente.nome_completo,
+        "email": cliente.email,
+        "cpf": cliente.cpf
+    }
 
 @user_router.post("/user/criar_endereco")
 async def criar_endereco(request: CriarEndereco, session: Session = Depends(get_session), token: str = Header(...)):
@@ -105,7 +130,6 @@ async def criar_endereco(request: CriarEndereco, session: Session = Depends(get_
             session.rollback()
             logger.error(f"Erro ao criar endereço: {e}")
             raise HTTPException(status_code=500, detail="Erro ao criar endereço")
-
 
 @user_router.put("/user/editar_endereco/")
 async def editar_endereco(request: EditarEndereco, session: Session = Depends(get_session), token: str = Header(...)):
@@ -162,7 +186,11 @@ async def deletar_endereco(request: DeletarEndereco, session: Session = Depends(
     if exp < datetime.now(timezone.utc):
         raise HTTPException(status_code=403, detail="Token expirado")
 
-    id_cliente = UUID(sub)
+    try:
+        id_cliente = UUID(sub)
+    except Exception as e:
+        logger.error(f"Erro ao gerar UUID: {e}")
+        raise HTTPException(status_code=400, detail="ID inválido")
 
     cliente = session.query(Cliente).filter(Cliente.id == id_cliente).first()
 
@@ -216,8 +244,8 @@ async def listar_enderecos(session: Session = Depends(get_session), token: str =
          }for endereco in enderecos]
     }
 
-@user_router.post("/user/mostrar_endereco/")
-async def mostrar_endereco(request: ListarEnderecos, session: Session = Depends(get_session), token: str = Header(...)):
+@user_router.get("/user/mostrar_endereco/")
+async def mostrar_endereco(endereco_id: int, session: Session = Depends(get_session), token: str = Header(...)):
 
     token_decodificado = decodificar_token(token)
 
@@ -227,15 +255,31 @@ async def mostrar_endereco(request: ListarEnderecos, session: Session = Depends(
     if exp < datetime.now(timezone.utc):
         raise HTTPException(status_code=403, detail="Token expirado")
 
-    id_cliente = UUID(sub)
+    try:
+        id_cliente = UUID(sub)
+    except Exception as e:
+        logger.error(f"Erro ao gerar UUID: {e}")
+        raise HTTPException(status_code=400, detail="ID inválido")
 
     cliente = session.query(Cliente).filter(Cliente.id == id_cliente).first()
 
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
 
-    endereco = session.query(Endereco).filter(Endereco.id == request.id_endereco, Endereco.cliente_id == cliente.id).first()
+    endereco = session.query(Endereco).filter(
+        Endereco.id == endereco_id,
+        Endereco.cliente_id == cliente.id
+    ).first()
     if not endereco:
         raise HTTPException(status_code=404, detail="Endereço não encontrado para este cliente")
 
-    return {"mensagem": "Endereço encontrado com sucesso!", "endereco": endereco}
+    return {
+        "mensagem": "Endereço encontrado com sucesso!",
+        "endereco": {
+            "id": endereco.id,
+            "endereco": endereco.endereco,
+            "bairro": endereco.bairro,
+            "cidade": endereco.cidade,
+            "estado": endereco.estado
+        }
+    }
