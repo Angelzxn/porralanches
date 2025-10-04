@@ -3,7 +3,7 @@ from typing import Optional
 
 class CadastrarCliente(BaseModel):
     nome_completo: str
-    email: EmailStr
+    email: str
     cpf: str
     senha: str
 
